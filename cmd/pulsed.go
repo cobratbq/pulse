@@ -11,7 +11,9 @@ import (
 var p *pulse.Connection
 
 func main() {
-	connectString := "mongodb://localhost/pulse"
+
+	// initialize connection to mongodb
+	var connectString = "mongodb://localhost/pulse"
 	conn, err := pulse.Dial(connectString, "pulse", "pulses")
 	if err != nil {
 		log.Printf("Failed to connect to pulse database '%s': %s.", connectString, err.Error())
@@ -20,6 +22,7 @@ func main() {
 	defer conn.Close()
 	p = conn
 
+	// initialize http pulse server
 	r := mux.NewRouter()
 	r.HandleFunc("/", home)
 	r.HandleFunc("/pulse", pulseInfo)
