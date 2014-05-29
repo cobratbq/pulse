@@ -12,7 +12,7 @@ var p *pulse.Connection
 
 func main() {
 	connectString := "mongodb://localhost/pulse"
-	conn, err := pulse.Dial(connectString)
+	conn, err := pulse.Dial(connectString, "pulse", "pulses")
 	if err != nil {
 		log.Printf("Failed to connect to pulse database '%s': %s.", connectString, err.Error())
 		return
