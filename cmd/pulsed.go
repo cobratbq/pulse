@@ -11,7 +11,6 @@ import (
 var p *pulse.Connection
 
 func main() {
-
 	// initialize connection to mongodb
 	var connectString = "mongodb://localhost/pulse"
 	conn, err := pulse.Dial(connectString, "pulse", "pulses")
@@ -21,6 +20,7 @@ func main() {
 	}
 	defer conn.Close()
 	p = conn
+	log.Println("Connection to mongoDB established.")
 
 	// initialize http pulse server
 	r := mux.NewRouter()
@@ -29,6 +29,8 @@ func main() {
 	r.HandleFunc("/show/{namespace}", pulseShow)
 	r.HandleFunc("/pulse/{namespace}", pulseRecord)
 	http.Handle("/", r)
+
+	log.Println("Starting http server ...")
 	log.Println(http.ListenAndServe(":8080", nil))
 }
 
@@ -47,17 +49,18 @@ func pulseShow(resp http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	ns, ok := vars["namespace"]
 	if !ok {
-		log.Println("Failed to find namespace path variable. Not recording this pulse.")
+		log.Println("Failed to find namespace path variable.")
+		resp.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	pulses, err := p.Get(ns)
 	if err != nil {
 		log.Println(err.Error())
+		resp.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	fmt.Fprintln(resp, "Pulses:")
 	for _, pulse := range pulses {
-		fmt.Fprintf(resp, "%s: %s\n", pulse.Namespace, pulse.Time.String())
+		fmt.Fprintf(resp, "%s,%s\n", pulse.Namespace, pulse.Time.String())
 	}
 }
 
@@ -67,8 +70,10 @@ func pulseRecord(resp http.ResponseWriter, req *http.Request) {
 	ns, ok := vars["namespace"]
 	if !ok {
 		log.Println("Failed to find namespace path variable. Not recording this pulse.")
+		resp.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	log.Printf("PULSE '%s'", ns)
 	p.Record(ns)
+	resp.Write([]byte("OK"))
 }
