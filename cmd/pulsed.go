@@ -1,8 +1,8 @@
 package main
 
 import (
-	".."
 	"fmt"
+	"github.com/cobratbq/pulse"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
