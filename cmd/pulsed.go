@@ -40,6 +40,7 @@ func pulseInfo(resp http.ResponseWriter, req *http.Request) {
 }
 
 func pulseShow(resp http.ResponseWriter, req *http.Request) {
+	defer req.Body.Close()
 	vars := mux.Vars(req)
 	ns, ok := vars["namespace"]
 	if !ok {
