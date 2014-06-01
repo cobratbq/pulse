@@ -1,8 +1,8 @@
 package main
 
 import (
-	"flag"
 	"fmt"
+	"github.com/cobratbq/flagtag"
 	"github.com/cobratbq/pulse"
 	"github.com/gorilla/mux"
 	"log"
@@ -10,16 +10,16 @@ import (
 )
 
 type configuration struct {
-	DatabaseHost string
-	DatabaseName string
-	Collection   string
-	Port         uint
+	DatabaseHost string `flag:"dbhost,localhost,Database host."`
+	DatabaseName string `flag:"dbname,pulse,Database name."`
+	Collection   string `flag:"collection,pulses,Collection for recording pulses."`
+	Port         uint   `flag:"port,8000,Port number for pulse server."`
 }
 
 func main() {
 	// initialize with specified program arguments
 	var config configuration
-	configure(&config)
+	flagtag.MustConfigureAndParse(&config)
 
 	// initialize connection to mongodb
 	var connectString = fmt.Sprintf("mongodb://%s", config.DatabaseHost)
@@ -41,14 +41,6 @@ func main() {
 	// start http pulse server
 	log.Printf("Starting http server on :%d ...", config.Port)
 	log.Fatalln(http.ListenAndServe(fmt.Sprintf(":%d", config.Port), nil))
-}
-
-func configure(config *configuration) {
-	flag.UintVar(&config.Port, "port", 8000, "Pulse server port.")
-	flag.StringVar(&config.DatabaseHost, "dbhost", "localhost", "Database host.")
-	flag.StringVar(&config.DatabaseName, "dbname", "pulse", "Database name.")
-	flag.StringVar(&config.Collection, "collection", "pulses", "Name of collection for storing pulses.")
-	flag.Parse()
 }
 
 func info(resp http.ResponseWriter, req *http.Request) {
